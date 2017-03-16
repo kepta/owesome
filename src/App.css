@@ -22,3 +22,12 @@
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
+
+
+body, #root {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  width: 100%;
+}
+  

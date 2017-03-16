@@ -3,8 +3,20 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "codemirror": "^5.24.2",
+    "codemirror-graphql": "^0.6.3",
+    "graphiql": "0.9.1",
+    "graphql": "^0.9.1",
+    "lodash.debounce": "^4.0.8",
+    "marked": "^0.3.6",
+    "moment": "^2.17.1",
+    "pako": "^1.0.4",
+    "ramda": "^0.23.0",
     "react": "^15.4.2",
-    "react-dom": "^15.4.2"
+    "react-codemirror": "^0.3.0",
+    "react-dom": "^15.4.2",
+    "webworkify-webpack": "^2.0.4",
+    "xml2js": "^0.4.17"
   },
   "devDependencies": {
     "react-scripts": "0.9.5"
