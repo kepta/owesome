@@ -1,4 +1,4 @@
-import { digest, getGz } from './network.processing';
+import { digest, getGz } from './processing';
 
 function ranger(indentities, t, filter) {
     function goo(x, y, prev) {
@@ -14,9 +14,11 @@ function ranger(indentities, t, filter) {
     }
     return goo(0, Math.min(t, indentities.length), []);
 }
+
 function split(n) {
     return [parseInt(n / 1000), n % 1000];
 }
+
 export default function worker(self) {
     self.addEventListener('message', (event) => {
         var identities = event.data[0].map(split);

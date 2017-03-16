@@ -3,9 +3,9 @@ import work from 'webworkify-webpack';
 import moment from 'moment';
 
 const url = 'http://localhost:5000/page';
-const LIMIT = 400;
+const LIMIT = 900;
 
-function ranger(identifiers, filter, limit = 4, conc = 8)  {
+export function ranger(identifiers, filter, limit = 4, conc = 8)  {
     let result = [];
     let count = 0;
     let grp = R.groupBy(n => n % conc, R.range(0, identifiers.length));
@@ -16,7 +16,7 @@ function ranger(identifiers, filter, limit = 4, conc = 8)  {
         relation: true
     };
     if (filter.users) {
-        _filter.users = filter.users.split(',');
+        _filter.users = filter.users;
     }
     return new Promise((res, rej) => {
         return R.map(((x) => {
@@ -55,16 +55,18 @@ function getQueryStr(filters) {
     return params.length > 0 ? params.join('&') : '';
 }
 export function apiGet(filters) {
+    if (filters.users) {
+        filters.users = filters.users.join(',');
+    }
     return fetch(`${url}?${getQueryStr(filters)}`)
         .then(d => d.json())
         .then(d => {
-            if (d.data.len > LIMIT) {
-                console.log('rejecting', d && d.data && d.data.len)
+            console.log(d.len);
+            if (d.len > LIMIT) {
+                console.log('rejecting', d && d.len)
                 return Promise.reject(d.problem);
             }
-            return d.data.docs.map(x => x.page);
+            return d.docs.map(x => x.page);
         })
-        .then(r => ranger(r, filters))
         .catch(console.error);
-
 }

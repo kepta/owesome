@@ -1,7 +1,8 @@
 import R from 'ramda';
 import pako from 'pako';
 import { parseString as xtoj } from 'xml2js';
-const url = 'https://s3.amazonaws.com/osm-changesets/minute/002';
+// const url = 'https://s3.amazonaws.com/osm-changesets/minute/002';
+const url = 'https://planet.osm.org/replication/minute/002';
 export const gimme = R.curry((s, d) => R.pluck(s, d).filter(R.identity));
 const bgMp = R.forEachObjIndexed((cdm, key1) => R.forEachObjIndexed((nwr, key2) => { nwr.forEach(m => { if (!m) return; m.$.nwr = key2; m.$.cdm = key1 }) }, cdm));
 const flattenIt = R.curry(d => R.unnest(R.unnest(R.compose(R.map(R.values), R.values)(d))));
