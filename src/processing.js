@@ -20,13 +20,23 @@ export const extractCDM = r => ({
 });
 
 export function digest(r) {
-    // return r;
     var osmChange = gimme('osmChange')(r);
     var bgmp = bgMp(extractCDM(osmChange));
     var flatten = flattenIt(bgmp);
     return flatten;
 }
-
+export function newDigest(r) {
+    const pick = (x, y) => R.compose(R.map((i) => { if (!i) {return}; i.$.nwr = x; i.$.cdm = y; return i }), R.unnest, gimme(x))
+    const newExtractNWR = (rron, cdm) => {
+        if (!rron) return undefined;
+        return R.concat(pick('node', cdm)(rron), pick('way', cdm)(rron), pick('relation', cdm)(rron));
+    };
+    return R.concat(
+        newExtractNWR(r.osmChange.create, 'create'),
+        newExtractNWR(r.osmChange.modify, 'modify'),
+        newExtractNWR(r.osmChange.delete, 'delete')
+    );
+}
 export function convertToObj(d, filter) {
     return new Promise((res, rej) => xtoj(d, { async: true, validator: validator(filter) }, (er, result) => {
         if (er) rej(er);

@@ -37,22 +37,35 @@ export default buildSchema(`
     type Relation {
         count: Int
     }
+    type TagKey {
+        count: Int,
+        values: [String]
+        key: String
+    }
+    type Tags {
+        count: Int
+        keys: [TagKey]
+    }
     type User {
         uid: ID
         user: String
-        count: Int
+        objectCount: Int
+        wayCount: Int
+        nodeCount: Int
+        relationCount: Int
         changeset: [String]
         points: [LatLng]
         nodes: [Node]
         ways: [Way]
         relations: Relation
+        tags(tags: [String]): Tags
     }
     type PageBuilder {
         data: String
     }
     type Query {
         getDie(numSides: Int): RandomDie
-        users(user: [String]): [User]
+        users(users: [String], dateFrom: String, dateTo: String): [User]
         pages(pageIds: [Int]!): PageBuilder
         nodes: [Node]
         ways: [Way]

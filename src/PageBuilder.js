@@ -1,5 +1,6 @@
 // @flow
-import { ranger, apiGet } from './initiator';
+import ranger, {apiGet } from './initiator';
+import R from 'ramda'
 function arraysEqual(arr1, arr2) {
     if (!arr2) return false;
     arr1 = arr1.sort((a, b) => a - b);
@@ -15,7 +16,6 @@ function arraysEqual(arr1, arr2) {
 }
 class PageBuilder {
     constructor() {
-        
         // const identifiers = pages.map(e => parseInt(e, 10));
         // this.pages = ranger(identifiers, 'andygol,PlaneMad');
         this.filters = {};
@@ -34,40 +34,17 @@ class PageBuilder {
         return this.promise.then(x => args);
     }
     userFilter(args) {
-        this.filters.users = args;
+        this.filters.users = args.users;
+        this.filters.dateFrom = args.dateFrom;
+        this.filters.dateTo = args.dateTo;
+        this.filters.tags = args.tags;
         apiGet(this.filters)
         .then(x => {
-            console.log(arraysEqual(x, this.pages),x, this.pages, this.filters)
-            if (arraysEqual(x, this.pages)) {
-                return this.result;
-            }
-            this.pages = x;
-            
-            if (x.length > 200) {
-                var i = 0;
-                this.result = [];
-                return ranger(x.slice(0, 200), this.filters)
-                .then(r => {
-                    this.result = r.concat(this.result);
-                    console.log('first atch');
-                    return ranger(x.slice(200, Math.min(400, this.pages.length)), this.filters);
-                })
-                .then( r => {
-                    this.result = r.concat(this.result);
-                    if (x.length > 400) {
-                        return ranger(x.slice(400, this.pages.length), this.filters).then(r => {
-                            this.result = r.concat(this.result);
-                            return this.result;
-                        });
-                    }
-                    return this.result;
-                });
-            }
-            return this.result
+            return ranger.load(x, this.filters);
         })
         .then(r => {
-            this.result = r;
-            window.r = r;
+            var result = R.unnest(r).filter(R.identity);
+            this.result = result;
             console.log('processed all');
             this.promiseRes();
             return r;

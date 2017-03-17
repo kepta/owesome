@@ -9,9 +9,9 @@ import './graphiql.css';
 import PageBuilder from './PageBuilder';
 export function graphQLFetcher(graphQLParams) {
     PageBuilder.createPinky();
-    return graphql(schema, graphQLParams.query, root).then(r => {
-      return r;
-  })
+    return graphql(schema, graphQLParams.query, root, null, graphQLParams.variables, graphQLParams.operationName).then(r => {
+        return r;
+    });
 }
 
 export default class App extends React.Component{
