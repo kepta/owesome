@@ -54,7 +54,8 @@ class WorkerHandler {
         this.pages = pages;
         this.filter = filter;
         let grp = R.groupBy(n => n % THREADS, R.range(0, pages.length));
-        this.oscloaded = new CustomEvent("oscloaded");
+        this.oscstarted = new CustomEvent("oscstarted", { detail: pages.length});
+        document.body.dispatchEvent(this.oscstarted);
         grp = R.map(r => r.map(x => pages[x]), grp);
         for(var i in grp) {
             this.workers[i].queue = grp[i];
@@ -70,11 +71,15 @@ class WorkerHandler {
         var page = w.queue.pop()
         if (page) {
             w.currentPage = page;
+            document.body.dispatchEvent(new CustomEvent("oscpageload", {
+                detail: page
+            }));
             w.instance.postMessage([page, JSON.stringify(this.filter)]);
         } else {
             w.currentPage = -1;
             if (this.errored.length + this.result.length === this.pages.length) {
                 console.log('finished oscs, dispatching event')
+                this.oscloaded = new CustomEvent("oscloaded");
                 document.body.dispatchEvent(this.oscloaded);
             }
         }
@@ -92,7 +97,7 @@ export default ranger;
 //     };
 //     w.postMessage([x, limit, JSON.stringify(_filter)]);
 // }), grp)
-export function ranger(identifiers, filter, limit = 4, conc = 8)  {
+export function ranger2(identifiers, filter, limit = 4, conc = 8)  {
     let result = [];
     let count = 0;
     let grp = R.groupBy(n => n % conc, R.range(0, identifiers.length));

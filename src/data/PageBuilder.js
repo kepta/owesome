@@ -1,6 +1,8 @@
 // @flow
 import ranger, {apiGet } from './initiator';
-import R from 'ramda'
+import R from 'ramda';
+var log = (x) => {console.log(x); return x};
+import { tagsFilter } from './filters'; 
 function arraysEqual(arr1, arr2) {
     if (!arr2) return false;
     arr1 = arr1.sort((a, b) => a - b);
@@ -33,12 +35,24 @@ class PageBuilder {
     getDie(args) {
         return this.promise.then(x => args);
     }
-    userFilter(args) {
-        this.filters.users = args.users;
-        this.filters.dateFrom = args.dateFrom;
-        this.filters.dateTo = args.dateTo;
-        this.filters.tags = args.tags;
-        apiGet(this.filters)
+    setFilters(filters) {
+        this.filters.users = filters.users;
+        this.filters.dateFrom = filters.dateFrom;
+        this.filters.dateTo = filters.dateTo;
+        this.filters.tags = filters.tags;
+        if (filters.users || filters.dateFrom || filters.dateTo || filters.tags) {
+            return this.loadOSc();
+        }
+        return Promise.resolve();
+    }
+    getResult() {
+        return this.result;
+    }
+    usersFilter(users) {
+        return Promise.resolve(R.toPairs(R.groupBy(R.path(['$', 'user']), this.result)));
+    }
+    loadOSc() {
+        return apiGet(this.filters)
         .then(x => {
             return ranger.load(x, this.filters);
         })
@@ -49,12 +63,6 @@ class PageBuilder {
             this.promiseRes();
             return r;
         });
-        return this.promise.then((x) => ({
-            args,
-            result: this.result
-        }));
-    }
-    data() {
     }
 }
 const pageBuilder = new PageBuilder();

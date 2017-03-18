@@ -2,26 +2,7 @@ import PageBuilder from './PageBuilder';
 import R from 'ramda';
 window.R = R;
 const limit = 1000;
-class RandomDie {
-    constructor(numSides) {
-        this.numSides = numSides;
-    }
-
-    rollOnce() {
-        return 1 + Math.floor(Math.random() * this.numSides);
-    }
-
-    roll({ numRolls }) {
-        var output = [];
-        for (var i = 0; i < numRolls; i++) {
-            output.push(this.rollOnce());
-        }
-        return output;
-    }
-    name() {
-        return 'kushan';
-    }
-}
+import { tagsFilter } from './filters';
 
 class Node {
     constructor(dollarNode) {
@@ -62,29 +43,34 @@ class TagKey {
         return this.tags.length;
     }
     values() {
-        return R.uniq(R.pluck('v', this.tags));
+        return R.countBy(R.toLower, R.pluck('v', this.tags));
     }
 }
-class Tags {
-    constructor(tagFilters, tags) {
-        this.tags = R.compose(
-            R.pluck('$'),
-            R.unnest,
-            R.pluck('tag'),
-            R.forEach(r => r.tag.forEach(t => t.$.info = r.$))
-        )(tags);
-        this.tagFilters = tagFilters;
-        console.log(tagFilters);
+
+class Tag {
+    // @tags [{$: {k, v}, parent: {$, nd, tag}}] 
+    // not the parent.tag will be filtered from source
+    constructor(key, tags) {
+        // this.data = Rtags;
+        console.log(key, tags);
+        this.tags = tags;
+        this.key = key;
+    }
+    key() {
+        return this.key
     }
     count() {
         return this.tags.length;
     }
-    filter(k, v) {
-        // return
-        // tagFilters.forEach()
+    valueCount() {
+        return R.uniq(R.map(R.path(["$", "v"]), this.tags)).length;
     }
-    keys() {
-        return R.compose(R.map(t => new TagKey(t[0], t[1])), R.toPairs, R.groupBy(t => t.k))(this.tags);
+    values() {
+        return R.values(R.mapObjIndexed((v, k) => ({ value: k, count: v }), R.countBy(R.identity, R.map(R.path(["$", "v"]), this.tags))));
+    }
+    users(args) {
+        var users = R.compose(R.toPairs, R.groupBy(R.path(['$', 'user'])), R.uniq, R.project(['$', 'nd', 'tag']), R.pluck('parent'))(this.tags)
+        return R.map(([u, o]) => new User(u, o), users)
     }
 }
 class User {
@@ -92,7 +78,7 @@ class User {
         this.user = user;
         this.result = result;
         this.dollarFree = R.pluck('$', result);
-        this.userData = this.dollarFree.filter(x => x.user === this.user);
+        this.userData = this.dollarFree;
         this.count = R.countBy(x => x.nwr, this.userData);
     }
     points() {
@@ -128,14 +114,12 @@ class User {
         return this.dollarFree.filter(x => x.nwr === 'node').map(x => new Node(x));
     }
     tags(args) {
-        const tags = this.result.filter(x => x.$.user === this.user && x.hasOwnProperty('tag'));
-        return new Tags(args, tags)
+        const obj = tagsFilter(args, this.result);
+        return  R.map(([tag, o]) => new Tag(tag, o), obj);
     }
 }
 
 export var root = {
-    getDie: function ({ numSides }) {
-        return PageBuilder.getDie(numSides).then(() => new RandomDie(numSides || 6));
-    },
-    users: (args) => PageBuilder.userFilter(args).then(obj => obj.args.users.map(x => new User(x, obj.result))),
+    users: ({users}) => PageBuilder.usersFilter(users).then(obj => R.map(([u, o]) => new User(u, o), obj)),
+    tags: ({ tags }) => R.map(([tag, o]) => new Tag(tag, o), tagsFilter(tags)),
 };

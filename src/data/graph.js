@@ -11,10 +11,6 @@ const {
 } = require('graphql');
 
 export default buildSchema(`
-    type RandomDie {
-        roll(numRolls: Int!): [Int]
-        name: String
-    }
     type LatLng {
         lat: Float
         lon: Float
@@ -42,9 +38,16 @@ export default buildSchema(`
         values: [String]
         key: String
     }
-    type Tags {
+    type Tag {
         count: Int
-        keys: [TagKey]
+        values: [TagValue]
+        key: String
+        valueCount: Int
+        users(users: [String]): [User]
+    }
+    type TagValue {
+        value: String
+        count: Int
     }
     type User {
         uid: ID
@@ -58,17 +61,17 @@ export default buildSchema(`
         nodes: [Node]
         ways: [Way]
         relations: Relation
-        tags(tags: [String]): Tags
+        tags(tags: [String]): [Tag]
     }
     type PageBuilder {
         data: String
     }
     type Query {
-        getDie(numSides: Int): RandomDie
         users(users: [String], dateFrom: String, dateTo: String): [User]
         pages(pageIds: [Int]!): PageBuilder
         nodes: [Node]
         ways: [Way]
         relations: [Relation]
+        tags(tags: [String], dateFrom: String, dateTo: String) : [Tag]
     }
 `);
