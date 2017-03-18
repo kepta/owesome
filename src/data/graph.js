@@ -66,6 +66,12 @@ export default buildSchema(`
     type PageBuilder {
         data: String
     }
+    type Day {
+        day: String
+        timestamp: String
+        users(users: [String]): [User]
+        tags(tags: [String]): [Tag]
+    }
     type Query {
         users(users: [String], dateFrom: String, dateTo: String): [User]
         pages(pageIds: [Int]!): PageBuilder
@@ -73,5 +79,6 @@ export default buildSchema(`
         ways: [Way]
         relations: [Relation]
         tags(tags: [String], dateFrom: String, dateTo: String) : [Tag]
+        days(dateFrom: String, dateTo: String): [Day]
     }
 `);

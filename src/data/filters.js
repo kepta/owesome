@@ -1,9 +1,11 @@
 import R from 'ramda';
 import PageBuilder from './PageBuilder';
+import moment from 'moment';
 export function tagsFilter(filters, entries) {
     if (!entries) {
         entries = PageBuilder.getResult();
     }
+    debugger;
     const tagFiltersKey = Array.isArray(filters) && filters.map(x => x.split('=')[0]);
     const filterTags = entry => {
         if (Array.isArray(filters)) return R.pick(tagFiltersKey, entry);
@@ -24,4 +26,19 @@ export function tagsFilter(filters, entries) {
         addParentCopyToEachTag
     );
     return fortified(entries);
+}
+
+export function usersFilter(filters, entries) {
+    if (!entries) {
+        entries = PageBuilder.getResult();
+    }
+    return R.toPairs(R.groupBy(R.path(['$', 'user']), entries));
+}
+
+export function dayFilter(dateFrom, dateTo, entries) {
+    if (!entries) {
+        entries = PageBuilder.getResult();
+    }
+    const parseDate = (e) => moment(R.path(['$', 'timestamp'], e)).startOf('day');
+    return R.toPairs(R.groupBy(parseDate, entries));
 }

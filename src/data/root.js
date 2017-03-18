@@ -2,7 +2,7 @@ import PageBuilder from './PageBuilder';
 import R from 'ramda';
 window.R = R;
 const limit = 1000;
-import { tagsFilter } from './filters';
+import { tagsFilter, usersFilter, dayFilter } from './filters';
 
 class Node {
     constructor(dollarNode) {
@@ -73,6 +73,27 @@ class Tag {
         return R.map(([u, o]) => new User(u, o), users)
     }
 }
+
+class Day {
+    constructor(day, result) {
+        this.day = day;
+        this.result = result;
+    }
+    day() {
+        return this.day.format("Do MMM");
+    }
+    timestamp() {
+        return this.day.toISOString();
+    }
+    users(args) {
+        return R.map(([u, o]) => new User(u, o), usersFilter(args, this.result));
+    }
+    tags(args) {
+        const obj = tagsFilter(args, this.result);
+        return R.map(([tag, o]) => new Tag(tag, o), obj);
+    }
+}
+
 class User {
     constructor(user, result) {
         this.user = user;
@@ -113,13 +134,15 @@ class User {
     nodes() {
         return this.dollarFree.filter(x => x.nwr === 'node').map(x => new Node(x));
     }
-    tags(args) {
-        const obj = tagsFilter(args, this.result);
+    // TOFIX args uniform everywhere
+    tags({tags}) {
+        const obj = tagsFilter(tags, this.result);
         return  R.map(([tag, o]) => new Tag(tag, o), obj);
     }
 }
 
 export var root = {
-    users: ({users}) => PageBuilder.usersFilter(users).then(obj => R.map(([u, o]) => new User(u, o), obj)),
+    days: ({ dateFrom, dateTo }) => R.map(([day, o]) => new Day(day, o), dayFilter(dateFrom, dateTo)),
+    users: ({ users }) => R.map(([u, o]) => new User(u, o), usersFilter(users)),
     tags: ({ tags }) => R.map(([tag, o]) => new Tag(tag, o), tagsFilter(tags)),
 };

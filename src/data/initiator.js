@@ -158,7 +158,7 @@ export function apiGet(filters) {
             console.log(d.len, d.docs);
             if (d.len > LIMIT) {
                 console.log('rejecting', d && d.len)
-                return Promise.reject(d.problem);
+                return Promise.reject("The query is insanely huge("+d.len+")"+ ". Only god knows the answer!" );
             }
             return d.docs;
         })

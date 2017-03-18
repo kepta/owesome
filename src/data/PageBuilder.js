@@ -48,9 +48,6 @@ class PageBuilder {
     getResult() {
         return this.result;
     }
-    usersFilter(users) {
-        return Promise.resolve(R.toPairs(R.groupBy(R.path(['$', 'user']), this.result)));
-    }
     loadOSc() {
         return apiGet(this.filters)
         .then(x => {
