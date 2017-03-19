@@ -1,9 +1,6 @@
-import PageBuilder from './PageBuilder';
 import R from 'ramda';
-window.R = R;
-const limit = 1000;
 import { tagsFilter, usersFilter, dayFilter } from './filters';
-
+import moment from 'moment';
 class Node {
     constructor(dollarNode) {
         this.dollarNode = dollarNode;
@@ -52,7 +49,6 @@ class Tag {
     // not the parent.tag will be filtered from source
     constructor(key, tags) {
         // this.data = Rtags;
-        console.log(key, tags);
         this.tags = tags;
         this.key = key;
     }
@@ -60,24 +56,20 @@ class Tag {
         return this.key
     }
     count() {
-        return this.tags.length;
-    }
-    valueCount() {
         return R.uniq(R.map(R.path(["$", "v"]), this.tags)).length;
     }
     values() {
         return R.values(R.mapObjIndexed((v, k) => ({ value: k, count: v }), R.countBy(R.identity, R.map(R.path(["$", "v"]), this.tags))));
     }
-    users(args) {
-        var users = R.compose(R.toPairs, R.groupBy(R.path(['$', 'user'])), R.uniq, R.project(['$', 'nd', 'tag']), R.pluck('parent'))(this.tags)
-        return R.map(([u, o]) => new User(u, o), users)
-    }
 }
 
 class Day {
     constructor(day, result) {
-        this.day = day;
+        this.day = moment(day);
         this.result = result;
+    }
+    getMoment() {
+        return this.day;
     }
     day() {
         return this.day.format("Do MMM");

@@ -42,8 +42,6 @@ export default buildSchema(`
         count: Int
         values: [TagValue]
         key: String
-        valueCount: Int
-        users(users: [String]): [User]
     }
     type TagValue {
         value: String

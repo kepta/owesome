@@ -26,9 +26,9 @@ export function digest(r) {
     return flatten;
 }
 export function newDigest(r) {
-    const pick = (x, y) => R.compose(R.map((i) => { if (!i) {return}; i.$.nwr = x; i.$.cdm = y; return i }), R.unnest, gimme(x))
+    const pick = (x, y) => R.compose(R.map((i) => { if (!i) {return}; i.$.nwr = x; i.$.cdm = y; return i }),R.filter(R.identity), R.unnest, gimme(x))
     const newExtractNWR = (rron, cdm) => {
-        if (!rron) return undefined;
+        if (!rron) return [];
         return R.concat(pick('node', cdm)(rron), pick('way', cdm)(rron), pick('relation', cdm)(rron));
     };
     return R.concat(

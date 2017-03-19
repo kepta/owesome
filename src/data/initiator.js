@@ -112,7 +112,7 @@ export function ranger2(identifiers, filter, limit = 4, conc = 8)  {
     }
     
     return new Promise((res, rej) => {
-        return R.map(((x) => {
+        return R.forEach(((x) => {
             const w = work(require.resolve('./worker.js'));
             w.onmessage = e => {
                 result.push(e.data);
@@ -151,16 +151,13 @@ export function apiGet(filters) {
     if (filters.users) {
         filters.users = filters.users.join(',');
     }
-    console.log(filters);
     return fetch(`${url}?${getQueryStr(filters)}`)
         .then(d => d.json())
         .then(d => {
-            console.log(d.len, d.docs);
             if (d.len > LIMIT) {
                 console.log('rejecting', d && d.len)
-                return Promise.reject("The query is insanely huge("+d.len+")"+ ". Only god knows the answer!" );
+                return Promise.reject("The query is insanely huge("+d.len+"). Only god knows the answer!" );
             }
             return d.docs;
         })
-        .catch(console.error);
 }

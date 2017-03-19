@@ -1,5 +1,7 @@
 import { digest, getGz, newDigest } from './processing';
 import R from 'ramda';
+import 'whatwg-fetch'; 
+
 function ranger(indentities, t, filter) {
     function goo(x, y, prev) {
         if (x >= indentities.length) {

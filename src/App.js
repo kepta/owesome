@@ -1,7 +1,5 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import GraphiQL from 'graphiql';
-import fetch from 'isomorphic-fetch';
 import schema from './data/graph';
 import {root} from './data/root';
 import { graphql, parse, Source, visit, validate} from 'graphql';
@@ -19,7 +17,7 @@ function findFilters(documentAST) {
                         let argValues;
                         let argKey = a.name.value;
                         if (a.value.kind === 'ListValue') {
-                          argValues = a.value.values.map(R.prop('value'))
+                            argValues = a.value.values.map(R.prop('value'))
                         } else {
                             argValues = a.value.value;
                         }
@@ -30,9 +28,9 @@ function findFilters(documentAST) {
                             filters[argKey] = argValues;
                         }
                     });
-                  } catch (e) {
-                      if (e) console.log(e);
-                  }
+                } catch (e) {
+                    if (e) console.log(e);
+                }
             }
         }
     });
@@ -54,6 +52,7 @@ export function graphQLFetcher(graphQLParams) {
     return PageBuilder
         .setFilters(filters)
         .then(() => graphql(schema, graphQLParams.query, root, null, graphQLParams.variables, graphQLParams.operationName))
+        .catch(console.error);
 }
 
 class ProgressIndicator extends React.Component {
@@ -101,6 +100,6 @@ export default class App extends React.Component{
                     <ProgressIndicator />
                 </GraphiQL.Footer>
             </GraphiQL>
-    );
+        );
     }
 }
