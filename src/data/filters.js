@@ -24,8 +24,16 @@ export function usersFilter(filters, entries) {
     }
     return R.toPairs(R.groupBy(R.path(['$', 'user']), entries));
 }
+export function wayFilter(filters, entries) {
+    if (!entries) {
+        entries = PageBuilder.getResult();
+    }
+    const result = R.filter(x => R.path(['$', 'nwr'], x) === 'way', entries);
+    window.nd = result.map(R.map(R.path(['$', 'ref'])));
+    return result;
+}
 
-export function dayFilter(dateFrom, dateTo, entries) {
+export function daysFilter(dateFrom, dateTo, entries) {
     if (!entries) {
         entries = PageBuilder.getResult();
     }

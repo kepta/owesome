@@ -7,6 +7,27 @@ import './graphiql.css';
 import PageBuilder from './data/PageBuilder';
 import R from 'ramda';
 
+const defaultQuery = `
+{
+	days(dateFrom: "2017-03-10", dateTo: "2017-03-20") {
+	  day
+	  timestamp
+    users(users:["manings", "andygol"]) {
+      uid
+      user
+      wayCount
+      nodeCount
+     	relationCount
+      changeset
+      tags {
+        key
+        count
+      }
+    }
+	}
+}
+
+`
 function findFilters(documentAST) {
     const filters = {};
     visit(documentAST, {
@@ -92,6 +113,7 @@ export default class App extends React.Component{
         return (
             <GraphiQL 
               fetcher={graphQLFetcher}
+              defaultQuery={defaultQuery}
             >
                 <GraphiQL.Logo>
                   Owesome

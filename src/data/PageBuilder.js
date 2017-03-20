@@ -1,5 +1,6 @@
 // @flow
-import ranger, {apiGet } from './initiator';
+import master from './master';
+import { apiGet } from './network';
 import R from 'ramda';
 
 // @Singleton
@@ -33,7 +34,7 @@ class PageBuilder {
     loadOSc() {
         return apiGet(this.filters)
         .then(x => {
-            return ranger.load(x, this.filters);
+            return master.load(x, this.filters);
         })
         .then(r => {
             var result = R.unnest(r).filter(R.identity);
@@ -46,5 +47,4 @@ class PageBuilder {
 }
 
 const pageBuilder = new PageBuilder();
-
 export default pageBuilder;

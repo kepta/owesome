@@ -1,12 +1,8 @@
 import R from 'ramda';
 import work from 'webworkify-webpack';
 import moment from 'moment';
+import { THREADS } from '../config';
 
-const url = 'http://localhost:5000/page';
-const LIMIT = 900;
-
-
-const THREADS = 10;
 class WorkerHandler {
     constructor() {
         this.workers = [];
@@ -45,7 +41,7 @@ class WorkerHandler {
         if (pages.length === 0) {
             return Promise.reject("No data found");
         }        
-        if (this.arraysEqual(pages, this.pages)) {
+        if (R.equals(pages, this.pages)) {
             return Promise.resolve(this.result);
         }
         console.log('starting load osc');
@@ -54,14 +50,14 @@ class WorkerHandler {
         this.pages = pages;
         this.filter = filter;
         let grp = R.groupBy(n => n % THREADS, R.range(0, pages.length));
-        this.oscstarted = new CustomEvent("oscstarted", { detail: pages.length});
-        document.body.dispatchEvent(this.oscstarted);
         grp = R.map(r => r.map(x => pages[x]), grp);
         for(var i in grp) {
             this.workers[i].queue = grp[i];
             this.workers[i].currentPage = -1;
             this.giveItWork(this.workers[i]);
         }
+        this.oscstarted = new CustomEvent("oscstarted", { detail: pages.length});
+        document.body.dispatchEvent(this.oscstarted);
         return new Promise((res, rej) => {
             document.body.addEventListener('oscloaded',() => res(this.result), { once: true });
         });
@@ -85,79 +81,6 @@ class WorkerHandler {
         }
     }
 }
-let ranger = new WorkerHandler();
-window.ranger = ranger;
-export default ranger;
-//     w.onmessage = e => {
-//         result.push(e.data);
-//         count++;
-//         if (count === Object.keys(grp).length) {
-//             res(R.unnest(result));
-//         }
-//     };
-//     w.postMessage([x, limit, JSON.stringify(_filter)]);
-// }), grp)
-export function ranger2(identifiers, filter, limit = 4, conc = 8)  {
-    let result = [];
-    let count = 0;
-    let grp = R.groupBy(n => n % conc, R.range(0, identifiers.length));
-    grp = R.map(r => r.map(x => identifiers[x]), grp);
-    var _filter = {
-        way: true,
-        node: true,
-        relation: true
-    };
-    if (filter.users) {
-        _filter.users = filter.users;
-    }
-    
-    return new Promise((res, rej) => {
-        return R.forEach(((x) => {
-            const w = work(require.resolve('./worker.js'));
-            w.onmessage = e => {
-                result.push(e.data);
-                count++;
-                if (count === Object.keys(grp).length) {
-                    res(R.unnest(result));
-                }
-            };
-            w.postMessage([x, limit, JSON.stringify(_filter)]);
-        }), grp);
-    });
-}
-function getQueryStr(filters) {
-    var params = [];
-    if (filters) {
-        const { dateFrom, dateTo, bbox, users, tags } = filters;
-        if (users) {
-            params.push(`users=${users}`);
-        }
-        if (dateFrom) {
-            params.push(`from=${moment(dateFrom).toISOString()}`);
-        }
-        if (dateTo) {
-            params.push(`to=${moment(dateTo).toISOString()}`);
-        }
-        if (tags) {
-            params.push(`tags=${tags.join(',')}`);
-        }
-        if (bbox) {
-            params.push(`bbox=${bbox}`);
-        }
-    }
-    return params.length > 0 ? params.join('&') : '';
-}
-export function apiGet(filters) {
-    if (filters.users) {
-        filters.users = filters.users.join(',');
-    }
-    return fetch(`${url}?${getQueryStr(filters)}`)
-        .then(d => d.json())
-        .then(d => {
-            if (d.len > LIMIT) {
-                console.log('rejecting', d && d.len)
-                return Promise.reject("The query is insanely huge("+d.len+"). Only god knows the answer!" );
-            }
-            return d.docs;
-        })
-}
+let master = new WorkerHandler();
+window.master = master;
+export default master;

@@ -1,8 +1,8 @@
 import R from 'ramda';
 import pako from 'pako';
 import { parseString as xtoj } from 'xml2js';
-// const url = 'https://s3.amazonaws.com/osm-changesets/minute/002';
-const url = 'https://planet.osm.org/replication/minute/002';
+import { OSC_URL } from '../config';
+
 export const gimme = R.curry((s, d) => R.pluck(s, d).filter(R.identity));
 const bgMp = R.forEachObjIndexed((cdm, key1) => R.forEachObjIndexed((nwr, key2) => { nwr.forEach(m => { if (!m) return; m.$.nwr = key2; m.$.cdm = key1 }) }, cdm));
 const flattenIt = R.curry(d => R.unnest(R.unnest(R.compose(R.map(R.values), R.values)(d))));
@@ -20,12 +20,6 @@ export const extractCDM = r => ({
 });
 
 export function digest(r) {
-    var osmChange = gimme('osmChange')(r);
-    var bgmp = bgMp(extractCDM(osmChange));
-    var flatten = flattenIt(bgmp);
-    return flatten;
-}
-export function newDigest(r) {
     const pick = (x, y) => R.compose(R.map((i) => { if (!i) {return}; i.$.nwr = x; i.$.cdm = y; return i }),R.filter(R.identity), R.unnest, gimme(x))
     const newExtractNWR = (rron, cdm) => {
         if (!rron) return [];
@@ -86,7 +80,7 @@ export function getGz(_n, p, filter) {
     if (_n === 0) n = '0';
     if (_n < 10) n = '0' + n;
     if (_n < 100) n = '0' + n;
-    return fetch(`${url}/${p}/${n}.osc.gz`)
+    return fetch(`${OSC_URL}/${p}/${n}.osc.gz`)
         .then((d) => d.arrayBuffer())
         .then(d => pako.inflate(d, { to: 'string' }))
         .then(d => convertToObj(d, filter));

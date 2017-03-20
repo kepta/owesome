@@ -1,14 +1,4 @@
-/**
- *  Copyright (c) Facebook, Inc.
- *  All rights reserved.
- *
- *  This source code is licensed under the license found in the
- *  LICENSE file in the root directory of this source tree.
- */
-
-const {
-    buildSchema,
-} = require('graphql');
+import { buildSchema } from 'graphql';
 
 export default buildSchema(`
     type LatLng {
@@ -29,12 +19,14 @@ export default buildSchema(`
     }
     type Way {
         count: Int
+        nd: [String]
+        tag: [Tag]
     }
     type Relation {
         count: Int
     }
     type TagKey {
-        count: Int,
+        count: Int
         values: [String]
         key: String
     }

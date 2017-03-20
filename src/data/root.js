@@ -1,9 +1,43 @@
 import R from 'ramda';
-import { tagsFilter, usersFilter, dayFilter } from './filters';
+import { tagsFilter, usersFilter, daysFilter, wayFilter } from './filters';
 import moment from 'moment';
 class Node {
     constructor(dollarNode) {
         this.dollarNode = dollarNode;
+    }
+    user() {
+        return this.dollarNode.user;
+    }
+    uid() {
+        return this.dollarNode.uid;
+    }
+    timestamp() {
+        return this.dollarNode.timestamp;
+    }
+    version() {
+        return this.dollarNode.version;
+    }
+    changeset() {
+        return this.dollarNode.changeset;
+    }
+    id() {
+        return this.dollarNode.id;
+    }
+    cdm() {
+        return this.dollarNode.cdm;
+    }
+}
+class Way {
+    constructor(way) {
+        this.way = way;
+    }
+    nd() {
+        return R.map(R.path(['$', 'ref']), this.way.nd);
+    }
+    tag() {
+        if (!this.way.tag) return;
+        const obj = tagsFilter(null, [this.way]);
+        return R.map(([tag, o]) => new Tag(tag, o), obj);
     }
     user() {
         return this.dollarNode.user;
@@ -45,8 +79,6 @@ class TagKey {
 }
 
 class Tag {
-    // @tags [{$: {k, v}, parent: {$, nd, tag}}] 
-    // not the parent.tag will be filtered from source
     constructor(key, tags) {
         // this.data = Rtags;
         this.tags = tags;
@@ -111,6 +143,9 @@ class User {
     user() {
         return this.user;
     }
+    ways() {
+        return wayFilter(null, this.result).map(x => new Way(x));
+    }
     objectCount() {
         return this.userData.length || 0;
     }
@@ -134,7 +169,7 @@ class User {
 }
 
 export var root = {
-    days: ({ dateFrom, dateTo }) => R.map(([day, o]) => new Day(day, o), dayFilter(dateFrom, dateTo)),
+    days: ({ dateFrom, dateTo }) => R.map(([day, o]) => new Day(day, o), daysFilter(dateFrom, dateTo)),
     users: ({ users }) => R.map(([u, o]) => new User(u, o), usersFilter(users)),
     tags: ({ tags }) => R.map(([tag, o]) => new Tag(tag, o), tagsFilter(tags)),
 };
