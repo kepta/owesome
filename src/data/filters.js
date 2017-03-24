@@ -1,5 +1,6 @@
 import R from 'ramda';
 import PageBuilder from './PageBuilder';
+
 export function tagsFilter(filters, entries) {
     if (!entries) {
         entries = PageBuilder.getResult();
@@ -24,12 +25,12 @@ export function usersFilter(filters, entries) {
     }
     return R.toPairs(R.groupBy(R.path(['$', 'user']), entries));
 }
+
 export function wayFilter(filters, entries) {
     if (!entries) {
         entries = PageBuilder.getResult();
     }
     const result = R.filter(x => R.path(['$', 'nwr'], x) === 'way', entries);
-    window.nd = result.map(R.map(R.path(['$', 'ref'])));
     return result;
 }
 

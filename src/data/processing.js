@@ -2,6 +2,7 @@ import R from 'ramda';
 import pako from 'pako';
 import { parseString as xtoj } from 'xml2js';
 import { OSC_URL } from '../config';
+const concatAll = R.unapply(R.reduce(R.concat, []));
 
 export const gimme = R.curry((s, d) => R.pluck(s, d).filter(R.identity));
 const bgMp = R.forEachObjIndexed((cdm, key1) => R.forEachObjIndexed((nwr, key2) => { nwr.forEach(m => { if (!m) return; m.$.nwr = key2; m.$.cdm = key1 }) }, cdm));
@@ -23,9 +24,9 @@ export function digest(r) {
     const pick = (x, y) => R.compose(R.map((i) => { if (!i) {return}; i.$.nwr = x; i.$.cdm = y; return i }),R.filter(R.identity), R.unnest, gimme(x))
     const newExtractNWR = (rron, cdm) => {
         if (!rron) return [];
-        return R.concat(pick('node', cdm)(rron), pick('way', cdm)(rron), pick('relation', cdm)(rron));
+        return concatAll(pick('node', cdm)(rron), pick('way', cdm)(rron), pick('relation', cdm)(rron));
     };
-    return R.concat(
+    return concatAll(
         newExtractNWR(r.osmChange.create, 'create'),
         newExtractNWR(r.osmChange.modify, 'modify'),
         newExtractNWR(r.osmChange.delete, 'delete')

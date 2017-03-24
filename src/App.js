@@ -2,11 +2,12 @@ import React from 'react';
 import GraphiQL from 'graphiql';
 import schema from './data/graph';
 import {root} from './data/root';
-import { graphql, parse, Source, visit, validate} from 'graphql';
+import { graphql, parse, print, Source, visit, validate} from 'graphql';
 import './graphiql.css';
 import PageBuilder from './data/PageBuilder';
 import R from 'ramda';
-
+import 'react-dates/lib/css/_datepicker.css';
+import { DateRangePicker, SingleDatePicker, DayPickerRangeController } from 'react-dates';
 const defaultQuery = `
 {
 	days(dateFrom: "2017-03-10", dateTo: "2017-03-20") {
@@ -83,6 +84,8 @@ class ProgressIndicator extends React.Component {
             loaded: 0,
             total: 0
         }
+        this.timestamp = Date.now();
+        this.diff = 0.5;
         document.body.addEventListener('oscstarted',  (n)=> {
             this.setState({
                 loaded: 0,
@@ -96,6 +99,9 @@ class ProgressIndicator extends React.Component {
             });
         });
         document.body.addEventListener('oscpageload', (n) => {
+            const currentTime = Date.now();
+            this.diff = 0.90 * (this.diff) + 0.05 * (currentTime - this.timestamp);
+            this.timestamp = currentTime;
             this.setState({
                 loaded: this.state.loaded + 1,
             });
@@ -103,25 +109,46 @@ class ProgressIndicator extends React.Component {
     }
     render() {
         return this.state.total ? 
-            <span> Loading {this.state.loaded}/{this.state.total} {this.state.loaded % 3 === 0 ? '.' : this.state.loaded % 3 === 1 ? '..' : '...'} </span>
+            <div>
+                <span> Loading {this.state.loaded}/{this.state.total} </span>
+                <span> {parseInt((this.state.total - this.state.loaded)*(this.diff/1000), 10) } seconds left</span>
+                <span> {this.state.loaded % 3 === 0 ? '.' : this.state.loaded % 3 === 1 ? '..' : '...'}</span>
+            </div>
           : null
     }
 }
 
 export default class App extends React.Component{
+    constructor() {
+        super();
+        this.state = {
+            startDate: null,
+            endDate: null
+        }
+    }
+    handleClickPrettifyButton = (event) => {
+        console.log('ji')
+        const editor = this.graphiql.getQueryEditor();
+        const currentText = editor.getValue();
+        const prettyText = print(parse(currentText));
+        editor.setValue(prettyText);
+    }
     render() {
         return (
             <GraphiQL 
               fetcher={graphQLFetcher}
               defaultQuery={defaultQuery}
-            >
-                <GraphiQL.Logo>
-                  Owesome
-                </GraphiQL.Logo>
-                <GraphiQL.Footer>
-                    <ProgressIndicator />
-                </GraphiQL.Footer>
-            </GraphiQL>
+              ref={c => { this.graphiql = c; }}
+              />
         );
     }
 }
+                // <DateRangePicker
+                //     withPortal
+                //     withFullScreenPortal
+                //     startDate={this.state.startDate} // momentPropTypes.momentObj or null,
+                //     endDate={this.state.endDate} // momentPropTypes.momentObj or null,
+                //     onDatesChange={({ startDate, endDate }) => this.setState({ startDate, endDate })} // PropTypes.func.isRequired,
+                //     focusedInput={this.state.focusedInput} // PropTypes.oneOf([START_DATE, END_DATE]) or null,
+                //     onFocusChange={focusedInput => this.setState({ focusedInput })} // PropTypes.func.isRequired,
+                // />
