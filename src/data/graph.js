@@ -102,14 +102,14 @@ export default makeExecutableSchema({
     ${geojsonSchema}
 
     type Query {
-        users(users: [String], dateFrom: String, dateTo: String): [User]
+        users(users: [String] = ["andygol"], dateFrom: String, dateTo: String): [User]
         nodes: [Node]
         ways: [Way]
         relations: [Relation]
         tags(tags: [String], dateFrom: String, dateTo: String) : [Tag]
         # random shit
         # goes on
-        days(dateFrom: String, dateTo: String): [Day]
+        days(dateFrom: String = "2017-03-23", dateTo: String = "2017-03-17"): [Day]
     }
 
 `, resolvers: {
