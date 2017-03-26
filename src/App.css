@@ -104,3 +104,7 @@ pre {
     .Pane2 {
       overflow: scroll;
     }
+    .Pane2 .CodeMirror {
+      height: 100%;
+    }
+    button:focus {outline:0;}
