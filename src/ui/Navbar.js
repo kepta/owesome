@@ -24,8 +24,6 @@ export default function ({ variables, handleChangeDate, focusedInput, onFocusCha
                 />
                 <span className="pt-navbar-divider"></span>
                 <button className={`pt-button ${advanced ? `pt-active` : ''} pt-minimal pt-icon-predictive-analysis`} onClick={jsonLiteHandler}></button>
-                <button className="pt-button pt-minimal pt-icon-notifications"></button>
-                <button className="pt-button pt-minimal pt-icon-cog"></button>
             </div>
         </nav>
     );

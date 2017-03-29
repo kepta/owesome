@@ -10,7 +10,7 @@
     "codemirror": "^5.24.2",
     "codemirror-graphql": "^0.6.3",
     "copy-to-clipboard": "^3.0.5",
-    "graphiql": "0.9.1",
+    "graphiql": "https://github.com/kepta/graphiql.git#1e49419d8407b487dfc73923985cd60c8212b8c9",
     "graphql": "^0.9.1",
     "graphql-tools": "^0.10.1",
     "lodash.debounce": "^4.0.8",
