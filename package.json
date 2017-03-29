@@ -43,5 +43,5 @@
     "eject": "react-scripts eject",
     "deploy": "gh-pages -d build -o origin"
   },
-  "homepage": "http://kushanjoshi.com/owesome"
+  "hxomepage": "http://kushanjoshi.com/owesome"
 }
