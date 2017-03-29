@@ -46,7 +46,7 @@ class Cache {
             const documentAST = parse(source);
             const validationErrors = validate(schema, documentAST);
             if (validationErrors.length > 0) {
-                throw new Error('wrong schema');
+                console.error(new Error('wrong schema'));
                 return;
             } 
         }
@@ -55,16 +55,15 @@ class Cache {
                 JSON.parse(val);
             } 
             catch(e) {
-                if (e) {
-                    throw e;
-                    return;
-                }
+                console.error(e);
+                return;
             }
         }
         return localStorage.setItem(key, val);
     }
 }
 const cache = new Cache();
+
 function findFilters(documentAST) {
     const filters = {};
     visit(documentAST, {
@@ -103,20 +102,24 @@ export default class App extends React.Component{
         const variables = this.getCachedVariables();
         this.state = {
             focusedInput: null,
-            variables: variables
+            variables: variables,
+            result: undefined
         };
         this.graphQLFetcher = this.graphQLFetcher.bind(this);
     }
     getCachedVariables() {
-        var variables = cache.getItem('graphiql:variables');
+        var variables;
         try {
-            variables = JSON.parse(variables);
+            variables = JSON.parse(cache.getItem('graphiql:variables'));
         }
         catch(e) {
-            return {
-                dateTo: moment().toISOString(),
-                dateFrom: moment().subtract(3, 'days').toISOString()
+            if (e) {
+                console.error(e);
             }
+        }
+        
+        if (!variables) {
+            variables = {};
         }
 
         if (!variables.dateTo || !variables.dateFrom) {
@@ -143,43 +146,41 @@ export default class App extends React.Component{
         .setFilters(filters)
         .then(() => graphql(schema, graphQLParams.query, root, null, graphQLParams.variables, graphQLParams.operationName))
         .then((result) => {
-            this.setState({ result, loading: false });
+            this.setState({ result });
             return result;
         })
         .catch(console.error);
     }
     onOutsideClick = () => {
         console.log(arguments);
-    }
+    };
     onDatesChange = ({ startDate, endDate }) => {
         this.setState({ startDate, endDate });
-    }
+    };
     onFocusChange = (focusedInput) => {
         this.setState({ focusedInput });
-    }
+    };
     handleChangeDate = ({ startDate, endDate }) => {
-        const variables = {
-            ...this.state.variables,
+        const variables = Object.assign({}, this.state.variables, {
             dateFrom: startDate.toISOString().slice(0, 11) + '00:00:00Z',
             dateTo: endDate.toISOString().slice(0, 11) + '23:59:00Z'
-        };
+        });
         // editor.setValue(variab);
         this.setState({ variables });
         this.graphiql.refresh();
-    }
+    };
     jsonLiteHandler = () => {
         this.setState({
             advanced: !this.state.advanced
         })
-    }
+    };
     handleEditVariables = (vars) => {
         const variables = JSON.parse(vars);
         this.setState({
             variables: variables
         });
-    }
+    };
     render() {
-        console.log(this.state.result);
         return (
             <div className="app">
                 <Navbar 
