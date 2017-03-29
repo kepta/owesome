@@ -50,9 +50,7 @@ export default class JSONViewer extends React.Component {
         if (this.props.result.data && this.props.result.data.__schema) {
             return <span></span>;
         }
-        if (this.state.loading) {
-            
-        }
+
         return this.props.advanced ? jsonTree : <JSONLite value={JSON.stringify(this.props.result, null, 2)} />
     }
 }
