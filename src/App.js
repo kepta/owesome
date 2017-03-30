@@ -17,6 +17,7 @@ import copy from 'copy-to-clipboard';
 import JSONViewer from './ui/JSONViewer';
 import ProgressIndicator from './ui/ProgressIndicator';
 import Navbar from './ui/Navbar';
+import debounce from 'lodash.debounce';
 const defaultQuery = `
     # Keyboard shortcuts:
     #   Run Query:  Ctrl-Enter (or press the play button above)
@@ -99,35 +100,42 @@ function findFilters(documentAST) {
 export default class App extends React.Component{
     constructor() {
         super();
-        const variables = this.getCachedVariables();
+        const variables = this.getCachedStuff();
         this.state = {
             focusedInput: null,
             variables: variables,
             result: undefined
         };
         this.graphQLFetcher = this.graphQLFetcher.bind(this);
+        this.getCachedStuff = this.getCachedStuff.bind(this);
+        this.handleEditVariables = debounce(this.handleEditVariables.bind(this), 750);
     }
-    getCachedVariables() {
-        var variables;
-        try {
-            variables = JSON.parse(cache.getItem('graphiql:variables'));
-        }
-        catch(e) {
-            if (e) {
-                console.error(e);
+    getCachedStuff(key) {
+        if (key === 'graphiql:variables') {
+            var variables;
+            try {
+                variables = JSON.parse(cache.getItem('graphiql:variables'));
             }
-        }
-        
-        if (!variables) {
-            variables = {};
-        }
+            catch (e) {
+                if (e) {
+                    console.error(e);
+                }
+            }
 
-        if (!variables.dateTo || !variables.dateFrom) {
-            variables.dateTo = moment().toISOString();
-            variables.dateFrom = moment().subtract(3, 'days').toISOString()
-        }
+            if (!variables) {
+                variables = {};
+            }
 
-        return variables;
+            if (!variables.dateTo || !variables.dateFrom) {
+                variables.dateTo = moment().toISOString();
+                variables.dateFrom = moment().subtract(3, 'days').toISOString()
+            }
+            this.setState({
+                variables: variables
+            });
+            return JSON.stringify(variables, null, 2);
+        }
+        return cache.getItem(key);
     }
     graphQLFetcher(graphQLParams) {
         const source = new Source(graphQLParams.query);
@@ -165,7 +173,9 @@ export default class App extends React.Component{
             dateFrom: startDate.toISOString().slice(0, 11) + '00:00:00Z',
             dateTo: endDate.toISOString().slice(0, 11) + '23:59:00Z'
         });
-        // editor.setValue(variab);
+
+        const editor = this.graphiql.getVariableEditor();
+        editor.setValue(JSON.stringify(variables, null, 2));
         this.setState({ variables });
         this.graphiql.refresh();
     };
@@ -174,33 +184,44 @@ export default class App extends React.Component{
             advanced: !this.state.advanced
         })
     };
-    handleEditVariables = (vars) => {
-        const variables = JSON.parse(vars);
-        this.setState({
-            variables: variables
-        });
+    handleEditVariables(vars) {
+        let variables;
+        try {
+            variables = JSON.parse(vars);
+        }
+        catch (e) {
+            variables = undefined;
+        }
+        finally {
+            if (variables) {
+                this.setState({
+                    variables: variables
+                });
+            }
+        }
     };
     render() {
         return (
             <div className="app">
-                <Navbar 
-                    variables={this.state.variables}
-                    handleChangeDate={this.handleChangeDate}
-                    focusedInput={this.state.focusedInput}
-                    onFocusChange={this.onFocusChange}
-                    advanced={this.state.advanced}
-                    jsonLiteHandler={this.jsonLiteHandler}
-                />
+                {
+                    this.state.variables ? <Navbar
+                        variables={this.state.variables}
+                        handleChangeDate={this.handleChangeDate}
+                        focusedInput={this.state.focusedInput}
+                        onFocusChange={this.onFocusChange}
+                        advanced={this.state.advanced}
+                        jsonLiteHandler={this.jsonLiteHandler}
+                    />: null
+                }
                 <SplitPane split="vertical" minSize={250} maxSize={-200} defaultSize={parseInt(localStorage.getItem('splitPos'), 10) || document.body.clientWidth / 2}
                     onChange={size => localStorage.setItem('splitPos', size)}  style={{position: 'relative'}} >
                     <GraphiQL
                         ref={c => { this.graphiql = c; window.c = c }}
                         fetcher={this.graphQLFetcher}
                         defaultQuery={defaultQuery}
-                        variables={JSON.stringify(this.state.variables)}
                         onEditVariables={this.handleEditVariables}
                         storage={{
-                            getItem: cache.getItem,
+                            getItem: this.getCachedStuff,
                             setItem: cache.setItem,
                             removeItem: cache.removeItem
                         }}
