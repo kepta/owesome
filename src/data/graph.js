@@ -109,7 +109,7 @@ export default makeExecutableSchema({
         tags(tags: [String], dateFrom: String, dateTo: String) : [Tag]
         # random shit
         # goes on
-        days(dateFrom: String = "2017-03-23", dateTo: String = "2017-03-17"): [Day]
+        days(dateFrom: String = "2017-03-23", dateTo: String = "2017-03-17", bbox: [Float]): [Day]
     }
 
 `, resolvers: {

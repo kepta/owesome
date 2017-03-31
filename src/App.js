@@ -92,7 +92,6 @@ function findFilters(documentAST) {
             }
         }
     });
-
     return filters;
 }
 
@@ -203,16 +202,11 @@ export default class App extends React.Component{
     render() {
         return (
             <div className="app">
-                {
-                    this.state.variables ? <Navbar
-                        variables={this.state.variables}
-                        handleChangeDate={this.handleChangeDate}
-                        focusedInput={this.state.focusedInput}
-                        onFocusChange={this.onFocusChange}
-                        advanced={this.state.advanced}
-                        jsonLiteHandler={this.jsonLiteHandler}
-                    />: null
-                }
+                <Navbar
+                    variables={this.state.variables}
+                    advanced={this.state.advanced}
+                    jsonLiteHandler={this.jsonLiteHandler}
+                />
                 <SplitPane split="vertical" minSize={250} maxSize={-200} defaultSize={parseInt(localStorage.getItem('splitPos'), 10) || document.body.clientWidth / 2}
                     onChange={size => localStorage.setItem('splitPos', size)}  style={{position: 'relative'}} >
                     <GraphiQL
