@@ -5,9 +5,18 @@ export function tagsFilter(filters, entries) {
     if (!entries) {
         entries = PageBuilder.getResult();
     }
-    const getKeyFromString = R.ifElse(R.contains('='), s => s.split('=')[0], R.identity);
-    const tagFiltersKey = Array.isArray(filters) && filters.map(getKeyFromString);
-    const filterTags = R.ifElse(() => Array.isArray(filters), R.pick(tagFiltersKey), R.identity);
+    const getKeyFromString = R.ifElse(
+        R.contains('='),
+        s => s.split('=')[0],
+        R.identity
+    );
+    const tagFiltersKey = Array.isArray(filters) &&
+        filters.map(getKeyFromString);
+    const filterTags = R.ifElse(
+        () => Array.isArray(filters),
+        R.pick(tagFiltersKey),
+        R.identity
+    );
     const fortified = R.compose(
         R.toPairs,
         filterTags,
@@ -38,6 +47,10 @@ export function daysFilter(dateFrom, dateTo, entries) {
     if (!entries) {
         entries = PageBuilder.getResult();
     }
-    const parseDate = R.compose(s => s.slice(0, 11) + '00:00:00Z', R.path(['$', 'timestamp']))
-    return R.toPairs(R.groupBy(parseDate, entries)).sort((a, b) => a[0].localeCompare(b[0]));
+    const parseDate = R.compose(
+        s => s.slice(0, 11) + '00:00:00Z',
+        R.path(['$', 'timestamp'])
+    );
+    return R.toPairs(R.groupBy(parseDate, entries)).sort((a, b) =>
+        a[0].localeCompare(b[0]));
 }

@@ -23,7 +23,9 @@ class PageBuilder {
     }
     setFilters(filters) {
         this.filters = filters;
-        if (filters.users || filters.dateFrom || filters.dateTo || filters.tags) {
+        if (
+            filters.users || filters.dateFrom || filters.dateTo || filters.tags
+        ) {
             return this.loadOSc();
         }
         return Promise.resolve();
@@ -33,16 +35,16 @@ class PageBuilder {
     }
     loadOSc() {
         return apiGet(this.filters)
-        .then(x => {
-            return master.load(x, this.filters);
-        })
-        .then(r => {
-            var result = R.unnest(r).filter(R.identity);
-            this.result = result;
-            console.debug('processed all oscs');
-            this.promiseRes();
-            return r;
-        });
+            .then(x => {
+                return master.load(x, this.filters);
+            })
+            .then(r => {
+                var result = R.unnest(r).filter(R.identity);
+                this.result = result;
+                console.debug('processed all oscs');
+                this.promiseRes();
+                return r;
+            });
     }
 }
 

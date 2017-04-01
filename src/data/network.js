@@ -1,5 +1,5 @@
 import moment from 'moment';
-import {SERVER_URL, PAGE_LIMIT } from '../config';
+import { SERVER_URL, PAGE_LIMIT } from '../config';
 
 export function apiGet(filters) {
     if (filters.users) {
@@ -9,11 +9,15 @@ export function apiGet(filters) {
         .then(d => d.json())
         .then(d => {
             if (d.len > PAGE_LIMIT) {
-                console.log('rejecting', d && d.len)
-                return Promise.reject("The query is insanely huge(" + d.len + "). Only god knows the answer!");
+                console.log('rejecting', d && d.len);
+                return Promise.reject(
+                    'The query is insanely huge(' +
+                        d.len +
+                        '). Only god knows the answer!'
+                );
             }
             return d.docs;
-        })
+        });
 }
 
 function getQueryStr(filters) {

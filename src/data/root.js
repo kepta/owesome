@@ -1,5 +1,11 @@
 import R from 'ramda';
-import { tagsFilter, usersFilter, daysFilter, wayFilter, cdmFilter } from './filters';
+import {
+    tagsFilter,
+    usersFilter,
+    daysFilter,
+    wayFilter,
+    cdmFilter
+} from './filters';
 import moment from 'moment';
 import { GraphQLScalarType } from 'graphql';
 
@@ -8,12 +14,15 @@ class CDM {
         this.create = create;
     }
     days({ dateFrom, dateTo }) {
-        return R.map(([day, o]) => new Day(day, o), daysFilter(dateFrom, dateTo));
+        return R.map(
+            ([day, o]) => new Day(day, o),
+            daysFilter(dateFrom, dateTo)
+        );
     }
-    users({users}) {
+    users({ users }) {
         return R.map(([u, o]) => new User(u, o), usersFilter(users));
     }
-    tags({tags}) {
+    tags({ tags }) {
         return R.map(([tag, o]) => new Tag(tag, o), tagsFilter(tags));
     }
 }
@@ -36,11 +45,9 @@ class FeatureCollection {
         this.data = data;
     }
     type() {
-        return "FeatureCollection"
+        return 'FeatureCollection';
     }
-    features() {
-       
-    }
+    features() {}
 }
 
 class Node {
@@ -48,9 +55,7 @@ class Node {
         this.dollarNode = dollarNode;
     }
     Feature() {
-        return {
-
-        }
+        return {};
     }
     point() {
         return new LatLon(this.dollarNode.lat, this.dollarNode.lon);
@@ -118,7 +123,7 @@ class TagKey {
         this.key = key;
     }
     key() {
-        return this.key
+        return this.key;
     }
     count() {
         return this.tags.length;
@@ -135,13 +140,18 @@ class Tag {
         this.key = key;
     }
     key() {
-        return this.key
+        return this.key;
     }
     count() {
-        return R.uniq(R.map(R.path(["$", "v"]), this.tags)).length;
+        return R.uniq(R.map(R.path(['$', 'v']), this.tags)).length;
     }
     values() {
-        return R.values(R.mapObjIndexed((v, k) => ({ value: k, count: v }), R.countBy(R.identity, R.map(R.path(["$", "v"]), this.tags))));
+        return R.values(
+            R.mapObjIndexed(
+                (v, k) => ({ value: k, count: v }),
+                R.countBy(R.identity, R.map(R.path(['$', 'v']), this.tags))
+            )
+        );
     }
 }
 
@@ -157,7 +167,10 @@ class Day {
         return this.day.toISOString();
     }
     users(args) {
-        return R.map(([u, o]) => new User(u, o), usersFilter(args, this.result));
+        return R.map(
+            ([u, o]) => new User(u, o),
+            usersFilter(args, this.result)
+        );
     }
     tags(args) {
         const obj = tagsFilter(args, this.result);
@@ -180,7 +193,7 @@ class Day {
         return this.day;
     }
     day() {
-        return this.day.format("Do MMM");
+        return this.day.format('Do MMM');
     }
 }
 class GeoJSONPoint {
@@ -188,10 +201,10 @@ class GeoJSONPoint {
         this.data = data;
     }
     type() {
-        return "Point";
+        return 'Point';
     }
     coordinates() {
-        console.log('here bro')
+        console.log('here bro');
         return [[1232, 22], [12, 21]];
     }
 }
@@ -200,18 +213,21 @@ class Feature {
         this.data = data;
     }
     type() {
-        return "Feature";
+        return 'Feature';
     }
     geometry() {
         return JSON.stringify({
-            type: "Point",
-            coordinates: [parseFloat(this.data.$.lon), parseFloat(this.data.$.lat)]
-            });      
+            type: 'Point',
+            coordinates: [
+                parseFloat(this.data.$.lon),
+                parseFloat(this.data.$.lat)
+            ]
+        });
     }
     properties() {
         return JSON.stringify({
-            random: "properties"
-        })
+            random: 'properties'
+        });
     }
 }
 class FeatureCollectionObject {
@@ -219,7 +235,7 @@ class FeatureCollectionObject {
         this.data = data;
     }
     type() {
-        return "FeatureCollection";
+        return 'FeatureCollection';
     }
     features() {
         return this.data.filter(d => d.$.lat).map(d => new Feature(d));
@@ -235,9 +251,13 @@ class User {
         this.count = R.countBy(x => x.nwr, this.userData);
     }
     points() {
-        var lat = R.pluck('lat', this.userData).filter(R.identity).map(parseFloat);
-        var lon = R.pluck('lon', this.userData).filter(R.identity).map(parseFloat);
-        return R.range(0,lat.length).map(n => ({
+        var lat = R.pluck('lat', this.userData)
+            .filter(R.identity)
+            .map(parseFloat);
+        var lon = R.pluck('lon', this.userData)
+            .filter(R.identity)
+            .map(parseFloat);
+        return R.range(0, lat.length).map(n => ({
             lat: lat[n],
             lon: lon[n]
         }));
@@ -273,20 +293,23 @@ class User {
         return this.count.relation || 0;
     }
     nodes() {
-        return this.dollarFree.filter(x => x.nwr === 'node').map(x => new Node(x));
+        return this.dollarFree
+            .filter(x => x.nwr === 'node')
+            .map(x => new Node(x));
     }
     // TOFIX args uniform everywhere
-    tags({tags}) {
+    tags({ tags }) {
         const obj = tagsFilter(tags, this.result);
-        return  R.map(([tag, o]) => new Tag(tag, o), obj);
+        return R.map(([tag, o]) => new Tag(tag, o), obj);
     }
 }
 
 export var root = {
-    days: ({ dateFrom, dateTo }) => R.map(([day, o]) => new Day(day, o), daysFilter(dateFrom, dateTo)),
+    days: ({ dateFrom, dateTo }) =>
+        R.map(([day, o]) => new Day(day, o), daysFilter(dateFrom, dateTo)),
     users: ({ users }) => R.map(([u, o]) => new User(u, o), usersFilter(users)),
     tags: ({ tags }) => R.map(([tag, o]) => new Tag(tag, o), tagsFilter(tags)),
     create: () => new CDM('create', cdmFilter()),
     modify: () => new CDM('create', cdmFilter()),
-    delete: () => new CDM('delete', cdmFilter()),
+    delete: () => new CDM('delete', cdmFilter())
 };

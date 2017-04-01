@@ -2,8 +2,8 @@ var fs = require('fs');
 var pako = require('pako');
 var xtoj = require('xml2js').parseString;
 import { validator, gimme, convertToObj } from './processing';
-const xml = require('./fixtures/sample1.xml.js')
-const wayXml = require('./fixtures/way.sample.xml.js')
+const xml = require('./fixtures/sample1.xml.js');
+const wayXml = require('./fixtures/way.sample.xml.js');
 const R = require('ramda');
 
 const getSubStrCount = R.curry((str, sub) => (str.match(sub) || []).length);
@@ -16,10 +16,8 @@ function readFile() {
                 return rej(err);
             }
             return res(data);
-
         });
     });
-
 }
 
 it('filters the way ', () => {
@@ -31,7 +29,7 @@ it('filters the way ', () => {
     const way = convertToObj(xml);
     return Promise.all([wayFree, way]).then(r => {
         var [wayFree, way] = r;
-        delete way.osmChange.modify[2].way
+        delete way.osmChange.modify[2].way;
         expect(wayFree).toEqual(way);
     });
 });
@@ -119,7 +117,6 @@ it('filters  relation, node ', () => {
     });
 });
 
-
 it('filters  user ', () => {
     const nodeRelationFree = convertToObj(xml, {
         way: true,
@@ -138,6 +135,3 @@ it('filters  user ', () => {
         expect(userCountFree(/sinclarius/g)).toEqual(0);
     });
 });
-
-
-

@@ -7,15 +7,15 @@ const JSONObject = new GraphQLScalarType({
     description: 'Arbitrary JSON value',
     serialize: coerceObject,
     parseValue: coerceObject,
-    parseLiteral: parseObject,
+    parseLiteral: parseObject
 });
 
-const GeoJSONCoordinates =  new GraphQLScalarType({
+const GeoJSONCoordinates = new GraphQLScalarType({
     name: 'GeoJSONCoordinates',
     description: 'A (multidimensional) set of coordinates following x, y, z order.',
     serialize: coerceCoordinates,
     parseValue: coerceCoordinates,
-    parseLiteral: parseCoordinates,
+    parseLiteral: parseCoordinates
 });
 
 export default makeExecutableSchema({
@@ -112,28 +112,29 @@ export default makeExecutableSchema({
         days(dateFrom: String = "2017-03-23", dateTo: String = "2017-03-17", bbox: [Float]): [Day]
     }
 
-`, resolvers: {
-    JSONObject,
-    GeoJSONCoordinates
-}
+`,
+    resolvers: {
+        JSONObject,
+        GeoJSONCoordinates
+    }
 });
 
 function coerceObject(value) {
-    return JSON.parse(value)
+    return JSON.parse(value);
 }
 
 function parseObject(valueAST) {
-    return JSON.stringify(valueAST.value)
+    return JSON.stringify(valueAST.value);
 }
 
 function coerceCoordinates(value) {
     console.log('here', value);
-    
-    return value
+
+    return value;
 }
 
 function parseCoordinates(valueAST) {
     console.log('here', valueAST);
-    
-    return valueAST.value
+
+    return valueAST.value;
 }

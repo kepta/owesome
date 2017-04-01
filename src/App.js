@@ -2,12 +2,12 @@ import React from 'react';
 import GraphiQL from 'graphiql';
 import moment from 'moment';
 import schema from './data/graph';
-import {root} from './data/root';
-import { graphql, parse, print, Source, visit, validate} from 'graphql';
-import 'normalize.css/normalize.css'
+import { root } from './data/root';
+import { graphql, parse, print, Source, visit, validate } from 'graphql';
+import 'normalize.css/normalize.css';
 import '@blueprintjs/core/dist/blueprint.css';
 import './graphiql.css';
-import { Intent, Spinner, DatePickerFactory } from "@blueprintjs/core";
+import { Intent, Spinner, DatePickerFactory } from '@blueprintjs/core';
 import PageBuilder from './data/PageBuilder';
 import R from 'ramda';
 import { DateRangePicker } from 'react-dates';
@@ -18,22 +18,7 @@ import JSONViewer from './ui/JSONViewer';
 import ProgressIndicator from './ui/ProgressIndicator';
 import Navbar from './ui/Navbar';
 import debounce from 'lodash.debounce';
-const defaultQuery = `
-# Keyboard shortcuts:
-#   Run Query:  Ctrl-Enter
-#   Auto Complete:  Ctrl-Space (or just start typing)
-query ($dateFrom: String, $dateTo: String){
-  days(dateFrom: $dateFrom, dateTo: $dateTo) {
-    day
-    users(users:["andygol"]) {
-      user
-      nodeCount
-      wayCount
-      changeset
-    }
-  }
-}
-`;
+import { defaultQuery } from './config';
 
 class Cache {
     getItem(key) {
@@ -43,7 +28,6 @@ class Cache {
         return localStorage.removeItem(key);
     }
     setItem(key, val) {
-        debugger;
         if (key === 'graphiql:query') {
             const source = new Source(val);
             const documentAST = parse(source);
@@ -51,13 +35,12 @@ class Cache {
             if (validationErrors.length > 0) {
                 console.error(new Error('wrong schema'));
                 return;
-            } 
+            }
         }
         if (key === 'graphiql:variables') {
             try {
                 JSON.parse(val);
-            } 
-            catch(e) {
+            } catch (e) {
                 console.error(e);
                 return;
             }
@@ -65,6 +48,7 @@ class Cache {
         return localStorage.setItem(key, val);
     }
 }
+
 const cache = new Cache();
 
 function findFilters(documentAST) {
@@ -77,13 +61,15 @@ function findFilters(documentAST) {
                         let argValues;
                         let argKey = a.name.value;
                         if (a.value.kind === 'ListValue') {
-                            argValues = a.value.values.map(R.prop('value'))
+                            argValues = a.value.values.map(R.prop('value'));
                         } else {
                             argValues = a.value.value;
                         }
 
                         if (Array.isArray(filters[argKey])) {
-                            filters[argKey] = R.uniq(filters[argKey].concat(argValues));
+                            filters[argKey] = R.uniq(
+                                filters[argKey].concat(argValues)
+                            );
                         } else {
                             filters[argKey] = argValues;
                         }
@@ -97,8 +83,7 @@ function findFilters(documentAST) {
     return filters;
 }
 
-
-export default class App extends React.Component{
+export default class App extends React.Component {
     constructor() {
         super();
         const variables = this.getCachedStuff();
@@ -109,15 +94,17 @@ export default class App extends React.Component{
         };
         this.graphQLFetcher = this.graphQLFetcher.bind(this);
         this.getCachedStuff = this.getCachedStuff.bind(this);
-        this.debounceHandleEditVariables = debounce(this.handleEditVariables.bind(this), 750);
+        this.debounceHandleEditVariables = debounce(
+            this.handleEditVariables.bind(this),
+            750
+        );
     }
     getCachedStuff(key) {
         if (key === 'graphiql:variables') {
             var variables;
             try {
                 variables = JSON.parse(cache.getItem('graphiql:variables'));
-            }
-            catch (e) {
+            } catch (e) {
                 if (e) {
                     console.error(e);
                 }
@@ -129,7 +116,7 @@ export default class App extends React.Component{
 
             if (!variables.dateTo || !variables.dateFrom) {
                 variables.dateTo = moment().toISOString();
-                variables.dateFrom = moment().subtract(3, 'days').toISOString()
+                variables.dateFrom = moment().subtract(3, 'days').toISOString();
             }
             this.setState({
                 variables: variables
@@ -145,20 +132,30 @@ export default class App extends React.Component{
         if (validationErrors.length > 0) {
             return Promise.resolve({ errors: validationErrors });
         }
-        const filters = Object.assign({}, findFilters(documentAST), graphQLParams.variables);
+        const filters = Object.assign(
+            {},
+            findFilters(documentAST),
+            graphQLParams.variables
+        );
         // check if more than one month
         console.log(filters, findFilters(documentAST));
         if (filters.dateFrom && filters.dateTo) {
-
         }
-        return PageBuilder
-        .setFilters(filters)
-        .then(() => graphql(schema, graphQLParams.query, root, null, graphQLParams.variables, graphQLParams.operationName))
-        .then((result) => {
-            this.setState({ result });
-            return result;
-        })
-        .catch(console.error);
+        return PageBuilder.setFilters(filters)
+            .then(() =>
+                graphql(
+                    schema,
+                    graphQLParams.query,
+                    root,
+                    null,
+                    graphQLParams.variables,
+                    graphQLParams.operationName
+                ))
+            .then(result => {
+                this.setState({ result });
+                return result;
+            })
+            .catch(console.error);
     }
     onOutsideClick = () => {
         console.log(arguments);
@@ -166,7 +163,7 @@ export default class App extends React.Component{
     onDatesChange = ({ startDate, endDate }) => {
         this.setState({ startDate, endDate });
     };
-    onFocusChange = (focusedInput) => {
+    onFocusChange = focusedInput => {
         this.setState({ focusedInput });
     };
     handleChangeDate = ({ startDate, endDate }) => {
@@ -183,24 +180,22 @@ export default class App extends React.Component{
     jsonLiteHandler = () => {
         this.setState({
             advanced: !this.state.advanced
-        })
+        });
     };
     handleEditVariables(vars) {
         let variables;
         try {
             variables = JSON.parse(vars);
-        }
-        catch (e) {
+        } catch (e) {
             variables = undefined;
-        }
-        finally {
+        } finally {
             if (variables) {
                 this.setState({
                     variables: variables
                 });
             }
         }
-    };
+    }
     render() {
         return (
             <div className="app">
@@ -210,10 +205,22 @@ export default class App extends React.Component{
                     advanced={this.state.advanced}
                     jsonLiteHandler={this.jsonLiteHandler}
                 />
-                <SplitPane split="vertical" minSize={250} maxSize={-200} defaultSize={parseInt(localStorage.getItem('splitPos'), 10) || document.body.clientWidth / 2}
-                    onChange={size => localStorage.setItem('splitPos', size)}  style={{position: 'relative'}} >
+                <SplitPane
+                    split="vertical"
+                    minSize={250}
+                    maxSize={-200}
+                    defaultSize={
+                        parseInt(localStorage.getItem('splitPos'), 10) ||
+                            document.body.clientWidth / 2
+                    }
+                    onChange={size => localStorage.setItem('splitPos', size)}
+                    style={{ position: 'relative' }}
+                >
                     <GraphiQL
-                        ref={c => { this.graphiql = c; window.c = c }}
+                        ref={c => {
+                            this.graphiql = c;
+                            window.c = c;
+                        }}
                         fetcher={this.graphQLFetcher}
                         defaultQuery={defaultQuery}
                         onEditVariables={this.debounceHandleEditVariables}
@@ -223,10 +230,12 @@ export default class App extends React.Component{
                             removeItem: cache.removeItem
                         }}
                     />
-                    <JSONViewer result={this.state.result} advanced={this.state.advanced}/>
+                    <JSONViewer
+                        result={this.state.result}
+                        advanced={this.state.advanced}
+                    />
                 </SplitPane>
             </div>
         );
     }
 }
-

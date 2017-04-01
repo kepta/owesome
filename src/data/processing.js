@@ -5,10 +5,21 @@ import { OSC_URL } from '../config';
 const concatAll = R.unapply(R.reduce(R.concat, []));
 
 export const gimme = R.curry((s, d) => R.pluck(s, d).filter(R.identity));
-const bgMp = R.forEachObjIndexed((cdm, key1) => R.forEachObjIndexed((nwr, key2) => { nwr.forEach(m => { if (!m) return; m.$.nwr = key2; m.$.cdm = key1 }) }, cdm));
-const flattenIt = R.curry(d => R.unnest(R.unnest(R.compose(R.map(R.values), R.values)(d))));
+const bgMp = R.forEachObjIndexed((cdm, key1) =>
+    R.forEachObjIndexed(
+        (nwr, key2) => {
+            nwr.forEach(m => {
+                if (!m) return;
+                m.$.nwr = key2;
+                m.$.cdm = key1;
+            });
+        },
+        cdm
+    ));
+const flattenIt = R.curry(d =>
+    R.unnest(R.unnest(R.compose(R.map(R.values), R.values)(d))));
 
-export const extractNWR = (rron) => ({
+export const extractNWR = rron => ({
     node: R.unnest(R.unnest(R.map(gimme('node'))(rron))),
     way: R.unnest(R.unnest(R.map(gimme('way'))(rron))),
     relation: R.unnest(R.unnest(R.map(gimme('relation'))(rron)))
@@ -21,10 +32,27 @@ export const extractCDM = r => ({
 });
 
 export function digest(r) {
-    const pick = (x, y) => R.compose(R.map((i) => { if (!i) {return}; i.$.nwr = x; i.$.cdm = y; return i }),R.filter(R.identity), R.unnest, gimme(x))
+    const pick = (x, y) =>
+        R.compose(
+            R.map(i => {
+                if (!i) {
+                    return;
+                }
+                i.$.nwr = x;
+                i.$.cdm = y;
+                return i;
+            }),
+            R.filter(R.identity),
+            R.unnest,
+            gimme(x)
+        );
     const newExtractNWR = (rron, cdm) => {
         if (!rron) return [];
-        return concatAll(pick('node', cdm)(rron), pick('way', cdm)(rron), pick('relation', cdm)(rron));
+        return concatAll(
+            pick('node', cdm)(rron),
+            pick('way', cdm)(rron),
+            pick('relation', cdm)(rron)
+        );
     };
     return concatAll(
         newExtractNWR(r.osmChange.create, 'create'),
@@ -33,10 +61,11 @@ export function digest(r) {
     );
 }
 export function convertToObj(d, filter) {
-    return new Promise((res, rej) => xtoj(d, { async: true, validator: validator(filter) }, (er, result) => {
-        if (er) rej(er);
-        return res(result);
-    }));
+    return new Promise((res, rej) =>
+        xtoj(d, { async: true, validator: validator(filter) }, (er, result) => {
+            if (er) rej(er);
+            return res(result);
+        }));
 }
 
 export function validator(filter = {}) {
@@ -52,20 +81,16 @@ export function validator(filter = {}) {
                         retValue = newValue;
                     }
                 }
-            }
-            else if (filter.users) {
+            } else if (filter.users) {
                 if (xpath === `/osmChange/${b}/node`) {
                     if (filter.users.indexOf(newValue.$.user) === -1) {
                         retValue = undefined;
                     }
-                }
-                else if (xpath === `/osmChange/${b}/way`) {
+                } else if (xpath === `/osmChange/${b}/way`) {
                     if (filter.users.indexOf(newValue.$.user) === -1) {
                         retValue = undefined;
-
                     }
-                }
-                else if (xpath === `/osmChange/${b}/relation`) {
+                } else if (xpath === `/osmChange/${b}/relation`) {
                     if (filter.users.indexOf(newValue.$.user) === -1) {
                         retValue = undefined;
                     }
@@ -73,7 +98,7 @@ export function validator(filter = {}) {
             }
         }
         return retValue;
-    }
+    };
 }
 
 export function getGz(_n, p, filter) {
@@ -82,7 +107,7 @@ export function getGz(_n, p, filter) {
     if (_n < 10) n = '0' + n;
     if (_n < 100) n = '0' + n;
     return fetch(`${OSC_URL}/${p}/${n}.osc.gz`)
-        .then((d) => d.arrayBuffer())
+        .then(d => d.arrayBuffer())
         .then(d => pako.inflate(d, { to: 'string' }))
         .then(d => convertToObj(d, filter));
 }
