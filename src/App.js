@@ -19,19 +19,20 @@ import ProgressIndicator from './ui/ProgressIndicator';
 import Navbar from './ui/Navbar';
 import debounce from 'lodash.debounce';
 const defaultQuery = `
-    # Keyboard shortcuts:
-    #   Run Query:  Ctrl-Enter (or press the play button above)
-    #   Auto Complete:  Ctrl-Space (or just start typing)
-
-    query ($dateFrom: String, $dateTo: String){
-        days(dateFrom: $dateFrom, dateTo: $dateTo) {
-        day
-            users(users:["andygol", "manings"]) {
-            user
-            changeset
-            }
-        }
+# Keyboard shortcuts:
+#   Run Query:  Ctrl-Enter
+#   Auto Complete:  Ctrl-Space (or just start typing)
+query ($dateFrom: String, $dateTo: String){
+  days(dateFrom: $dateFrom, dateTo: $dateTo) {
+    day
+    users(users:["andygol"]) {
+      user
+      nodeCount
+      wayCount
+      changeset
     }
+  }
+}
 `;
 
 class Cache {
@@ -42,6 +43,7 @@ class Cache {
         return localStorage.removeItem(key);
     }
     setItem(key, val) {
+        debugger;
         if (key === 'graphiql:query') {
             const source = new Source(val);
             const documentAST = parse(source);
@@ -107,7 +109,7 @@ export default class App extends React.Component{
         };
         this.graphQLFetcher = this.graphQLFetcher.bind(this);
         this.getCachedStuff = this.getCachedStuff.bind(this);
-        this.handleEditVariables = debounce(this.handleEditVariables.bind(this), 750);
+        this.debounceHandleEditVariables = debounce(this.handleEditVariables.bind(this), 750);
     }
     getCachedStuff(key) {
         if (key === 'graphiql:variables') {
@@ -169,13 +171,13 @@ export default class App extends React.Component{
     };
     handleChangeDate = ({ startDate, endDate }) => {
         const variables = Object.assign({}, this.state.variables, {
-            dateFrom: startDate.toISOString().slice(0, 11) + '00:00:00Z',
-            dateTo: endDate.toISOString().slice(0, 11) + '23:59:00Z'
+            dateFrom: startDate && startDate.toISOString(),
+            dateTo: endDate && endDate.toISOString()
         });
-
         const editor = this.graphiql.getVariableEditor();
-        editor.setValue(JSON.stringify(variables, null, 2));
-        this.setState({ variables });
+        const stringified = JSON.stringify(variables, null, 2);
+        editor.setValue(stringified);
+        this.graphiql.handleEditVariables(stringified);
         this.graphiql.refresh();
     };
     jsonLiteHandler = () => {
@@ -203,7 +205,8 @@ export default class App extends React.Component{
         return (
             <div className="app">
                 <Navbar
-                    variables={this.state.variables}
+                    handleChangeDate={this.handleChangeDate}
+                    variables={this.state.variables || undefined}
                     advanced={this.state.advanced}
                     jsonLiteHandler={this.jsonLiteHandler}
                 />
@@ -213,7 +216,7 @@ export default class App extends React.Component{
                         ref={c => { this.graphiql = c; window.c = c }}
                         fetcher={this.graphQLFetcher}
                         defaultQuery={defaultQuery}
-                        onEditVariables={this.handleEditVariables}
+                        onEditVariables={this.debounceHandleEditVariables}
                         storage={{
                             getItem: this.getCachedStuff,
                             setItem: cache.setItem,
