@@ -22,35 +22,53 @@ const themed = {
     base0F: '#cc6633'
 };
 
-export default class JSONViewer extends React.Component {
+export default class JSONViewer extends React.PureComponent {
     render() {
-        var jsonTree =  (<JSONTree
+        var jsonTree = (
+            <JSONTree
                 theme={themed}
                 className="random"
                 data={this.props.result && this.props.result.data}
                 valueRenderer={(val, val2, val3, val4) => {
                     if (val4 === 'changeset') {
-                        return <a target="_black" href={`https://osmcha.mapbox.com/${val2}`}>{val2}</a>
+                        return (
+                            <a
+                                target="_black"
+                                href={`https://osmcha.mapbox.com/${val2}`}
+                            >
+                                {val2}
+                            </a>
+                        );
+                    }
+                    if (val2 === 'FeatureCollection') {
+                        console.log('here');
+                        return (
+                            <a href="#">
+                                {val2}
+                            </a>
+                        );
                     }
                     return <span>{val}</span>;
                 }}
- 
                 shouldExpandNode={(keyName, data, level) => {
                     if (level < 2) return true;
                     if (Array.isArray(data)) {
                         return data.length < 6;
                     }
                     return Object.keys(data).length < 10;
-                }} 
-            />);
+                }}
+            />
+        );
         if (!this.props.result) {
             return null;
         }
 
         if (this.props.result.data && this.props.result.data.__schema) {
-            return <span></span>;
+            return <span />;
         }
 
-        return this.props.advanced ? jsonTree : <JSONLite value={JSON.stringify(this.props.result, null, 2)} />
+        return this.props.advanced
+            ? jsonTree
+            : <JSONLite value={JSON.stringify(this.props.result, null, 2)} />;
     }
 }

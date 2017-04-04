@@ -19,6 +19,7 @@ import ProgressIndicator from './ui/ProgressIndicator';
 import Navbar from './ui/Navbar';
 import debounce from 'lodash.debounce';
 import { defaultQuery } from './config';
+import { getPages } from './data/network';
 
 class Cache {
     getItem(key) {
@@ -90,7 +91,8 @@ export default class App extends React.Component {
         this.state = {
             focusedInput: null,
             variables: variables,
-            result: undefined
+            result: undefined,
+            pagesLoaded: true
         };
         this.graphQLFetcher = this.graphQLFetcher.bind(this);
         this.getCachedStuff = this.getCachedStuff.bind(this);
@@ -125,38 +127,21 @@ export default class App extends React.Component {
         }
         return cache.getItem(key);
     }
-    graphQLFetcher(graphQLParams) {
-        const source = new Source(graphQLParams.query);
-        const documentAST = parse(source);
-        const validationErrors = validate(schema, documentAST);
-        if (validationErrors.length > 0) {
-            return Promise.resolve({ errors: validationErrors });
-        }
-        const filters = Object.assign(
-            {},
-            findFilters(documentAST),
-            graphQLParams.variables
-        );
-        // check if more than one month
-        console.log(filters, findFilters(documentAST));
-        if (filters.dateFrom && filters.dateTo) {
-        }
-        return PageBuilder.setFilters(filters)
-            .then(() =>
-                graphql(
-                    schema,
-                    graphQLParams.query,
-                    root,
-                    null,
-                    graphQLParams.variables,
-                    graphQLParams.operationName
-                ))
-            .then(result => {
-                this.setState({ result });
-                return result;
+    graphQLFetcher = graphQLParams => {
+        return graphql(
+            schema,
+            graphQLParams.query,
+            root,
+            null,
+            graphQLParams.variables,
+            graphQLParams.operationName
+        )
+            .then(r => {
+                this.setState({ result: r });
+                return r;
             })
             .catch(console.error);
-    }
+    };
     onOutsideClick = () => {
         console.log(arguments);
     };
@@ -196,14 +181,55 @@ export default class App extends React.Component {
             }
         }
     }
+    prettify = () => {
+        const editor = this.graphiql.getQueryEditor();
+        const currentText = editor.getValue();
+        const { parse, print } = require('graphql');
+        const prettyText = print(parse(currentText));
+        editor.setValue(prettyText);
+    };
+    handleRunQuery = () => {
+        console.log('here', this.graphiql);
+        this.setState({
+            pagesLoaded: false
+        });
+        const query = this.graphiql.getQueryEditor().getValue();
+        const variables = this.state.variables;
+        const source = new Source(query);
+        const documentAST = parse(source);
+        const validationErrors = validate(schema, documentAST);
+
+        if (validationErrors.length > 0) {
+            this.setState({
+                pagesLoaded: true
+            });
+            this.graphiql.autoCompleteLeafs();
+            return Promise.resolve({ errors: validationErrors });
+        }
+        const filters = Object.assign({}, findFilters(documentAST), variables);
+
+        getPages(filters)
+            .then(pages => {
+                this.setState({ pagesLoaded: true, pages });
+                return PageBuilder.loadOSc(pages, filters);
+            })
+            .then(pages => {
+                this.graphiql.handleRunQuery();
+            });
+    };
+    handleStopQuery = () => {};
     render() {
         return (
             <div className="app">
                 <Navbar
+                    runQuery={this.handleRunQuery}
+                    onStop={this.handleStopQuery}
+                    pagesLoaded={!this.state.pagesLoaded}
                     handleChangeDate={this.handleChangeDate}
                     variables={this.state.variables || undefined}
                     advanced={this.state.advanced}
                     jsonLiteHandler={this.jsonLiteHandler}
+                    prettify={this.prettify}
                 />
                 <SplitPane
                     split="vertical"

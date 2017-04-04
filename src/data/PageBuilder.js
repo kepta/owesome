@@ -1,6 +1,6 @@
 // @flow
 import master from './master';
-import { apiGet } from './network';
+import { getPages } from './network';
 import R from 'ramda';
 
 // @Singleton
@@ -21,30 +21,23 @@ class PageBuilder {
     getDie(args) {
         return this.promise.then(x => args);
     }
-    setFilters(filters) {
+    getResult() {
+        return this.result;
+    }
+    loadOSc(pages, filters) {
         this.filters = filters;
         if (
             filters.users || filters.dateFrom || filters.dateTo || filters.tags
         ) {
-            return this.loadOSc();
-        }
-        return Promise.resolve();
-    }
-    getResult() {
-        return this.result;
-    }
-    loadOSc() {
-        return apiGet(this.filters)
-            .then(x => {
-                return master.load(x, this.filters);
-            })
-            .then(r => {
+            return master.load(pages, this.filters).then(r => {
                 var result = R.unnest(r).filter(R.identity);
                 this.result = result;
                 console.debug('processed all oscs');
-                this.promiseRes();
                 return r;
             });
+        } else {
+            return Promise.resolve();
+        }
     }
 }
 

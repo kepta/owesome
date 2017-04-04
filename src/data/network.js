@@ -1,7 +1,7 @@
 import moment from 'moment';
 import { SERVER_URL, PAGE_LIMIT } from '../config';
 
-export function apiGet(filters) {
+export function getPages(filters) {
     if (filters.users) {
         filters.users = filters.users.join(',');
     }
