@@ -1,7 +1,6 @@
 import R from 'ramda';
-import work from 'webworkify-webpack';
-import moment from 'moment';
 import { THREADS } from '../config';
+var Worker = require('./a.worker.js');
 
 class WorkerHandler {
     constructor() {
@@ -10,7 +9,7 @@ class WorkerHandler {
         this.errored = [];
         for (var i = 0; i < THREADS; i++) {
             const w = {};
-            w.instance = work(require.resolve('./worker.js'));
+            w.instance = new Worker();
             w.currentPage = -1;
             w.id = i;
             w.queue = [];

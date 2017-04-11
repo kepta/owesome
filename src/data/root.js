@@ -7,7 +7,6 @@ import {
     cdmFilter
 } from './filters';
 import moment from 'moment';
-import { GraphQLScalarType } from 'graphql';
 
 class CDM {
     constructor(create) {

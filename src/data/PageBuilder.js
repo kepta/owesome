@@ -1,6 +1,5 @@
 // @flow
 import master from './master';
-import { getPages } from './network';
 import R from 'ramda';
 
 // @Singleton

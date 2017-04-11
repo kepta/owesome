@@ -1,4 +1,4 @@
-import { buildSchema, GraphQLScalarType } from 'graphql';
+import { GraphQLScalarType } from 'graphql';
 import { makeExecutableSchema } from 'graphql-tools';
 import geojsonSchema from './geojsonSchema';
 

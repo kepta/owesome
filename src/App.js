@@ -3,19 +3,12 @@ import GraphiQL from 'graphiql';
 import moment from 'moment';
 import schema from './data/graph';
 import { root } from './data/root';
-import { graphql, parse, print, Source, visit, validate } from 'graphql';
-import 'normalize.css/normalize.css';
-import '@blueprintjs/core/dist/blueprint.css';
-import './graphiql.css';
-import { Intent, Spinner, DatePickerFactory } from '@blueprintjs/core';
+import { graphql, parse, Source, visit, validate } from 'graphql';
+
 import PageBuilder from './data/PageBuilder';
 import R from 'ramda';
-import { DateRangePicker } from 'react-dates';
-import JSONTree from 'react-json-tree';
 import SplitPane from 'react-split-pane';
-import copy from 'copy-to-clipboard';
 import JSONViewer from './ui/JSONViewer';
-import ProgressIndicator from './ui/ProgressIndicator';
 import Navbar from './ui/Navbar';
 import debounce from 'lodash.debounce';
 import { defaultQuery } from './config';
@@ -215,6 +208,12 @@ export default class App extends React.Component {
             })
             .then(pages => {
                 this.graphiql.handleRunQuery();
+            })
+            .catch(e => {
+                this.setState({
+                    pagesLoaded: true,
+                    pages: []
+                });
             });
     };
     handleStopQuery = () => {};

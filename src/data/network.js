@@ -10,6 +10,7 @@ export function getPages(filters) {
         .then(d => {
             if (d.len > PAGE_LIMIT) {
                 console.log('rejecting', d && d.len);
+                alert('The response is too big, mind making a smaller query?');
                 return Promise.reject(
                     'The query is insanely huge(' +
                         d.len +
