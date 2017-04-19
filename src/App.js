@@ -13,7 +13,7 @@ import Navbar from './ui/Navbar';
 import debounce from 'lodash.debounce';
 import { defaultQuery } from './config';
 import { getPages } from './data/network';
-
+import { WarningToaster } from './ui/Toaster';
 class Cache {
     getItem(key) {
         return localStorage.getItem(key);
@@ -204,6 +204,11 @@ export default class App extends React.Component {
         getPages(filters)
             .then(pages => {
                 this.setState({ pagesLoaded: true, pages });
+                if (pages.length === 0) {
+                    WarningToaster.show({
+                        message: 'This query has no data, try lenient filtering!'
+                    });
+                }
                 return PageBuilder.loadOSc(pages, filters);
             })
             .then(pages => {

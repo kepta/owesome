@@ -11,12 +11,6 @@ class PageBuilder {
             this.promiseRej = rej;
         });
     }
-    createPinky() {
-        this.promise = new Promise((res, rej) => {
-            this.promiseRes = res;
-            this.promiseRej = rej;
-        });
-    }
     getDie(args) {
         return this.promise.then(x => args);
     }
