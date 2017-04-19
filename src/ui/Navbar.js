@@ -21,7 +21,8 @@ class Navbar extends React.PureComponent {
             variables,
             handleChangeDate,
             advanced,
-            jsonLiteHandler
+            jsonLiteHandler,
+            downloadJSON
         } = this.props;
         const currentMoment = moment();
 
@@ -81,6 +82,10 @@ class Navbar extends React.PureComponent {
                             `pt-button ${advanced ? `pt-active` : ''} pt-minimal pt-icon-predictive-analysis`
                         }
                         onClick={jsonLiteHandler}
+                    />
+                    <button
+                        className={`pt-button pt-minimal pt-icon-download`}
+                        onClick={downloadJSON}
                     />
                 </div>
             </nav>

@@ -233,6 +233,18 @@ export default class App extends React.Component {
                 });
             });
     };
+    downloadJSON = () => {
+        if (!this.state.pages || this.state.pages.length === 0) {
+            return;
+        }
+        var file = new Blob([JSON.stringify(this.state.result, null, 2)], {
+            type: 'text/json'
+        });
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(file);
+        a.download = 'result.json';
+        a.click();
+    };
     handleStopQuery = () => {};
     render() {
         return (
@@ -246,6 +258,7 @@ export default class App extends React.Component {
                     advanced={this.state.advanced}
                     jsonLiteHandler={this.jsonLiteHandler}
                     prettify={this.prettify}
+                    downloadJSON={this.downloadJSON}
                 />
                 <SplitPane
                     split="vertical"
