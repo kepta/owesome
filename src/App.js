@@ -4,6 +4,7 @@ import moment from 'moment';
 import schema from './data/graph';
 import { root } from './data/root';
 import { graphql, parse, Source, visit, validate } from 'graphql';
+import { PAGE_LIMIT } from './config';
 
 import PageBuilder from './data/PageBuilder';
 import R from 'ramda';
@@ -203,12 +204,22 @@ export default class App extends React.Component {
 
         getPages(filters)
             .then(pages => {
-                this.setState({ pagesLoaded: true, pages });
                 if (pages.length === 0) {
                     WarningToaster.show({
                         message: 'This query has no data, try lenient filtering!'
                     });
+                    return Promise.reject('The query is empty');
                 }
+
+                if (pages.length > PAGE_LIMIT) {
+                    console.log('rejecting');
+                    WarningToaster.show({
+                        message: `This query has an insane amount of data (${pages.length}), try a stricter filtering!`
+                    });
+
+                    return Promise.reject('The query is insanely huge');
+                }
+                this.setState({ pagesLoaded: true, pages });
                 return PageBuilder.loadOSc(pages, filters);
             })
             .then(pages => {
@@ -217,6 +228,7 @@ export default class App extends React.Component {
             .catch(e => {
                 this.setState({
                     pagesLoaded: true,
+                    result: undefined,
                     pages: []
                 });
             });

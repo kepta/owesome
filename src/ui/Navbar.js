@@ -42,7 +42,7 @@ class Navbar extends React.PureComponent {
                     <div className="pt-button-group .modifier">
                         <Tooltip
                             content="Prettify Query!"
-                            position={Position.BOTTOM}
+                            position={Position.RIGHT}
                             hoverOpenDelay={500}
                         >
                             <Button
@@ -53,8 +53,8 @@ class Navbar extends React.PureComponent {
                         </Tooltip>
                         <Tooltip
                             content="Run Query!"
-                            position={Position.BOTTOM}
-                            hoverOpenDelay={3000}
+                            position={Position.RIGHT}
+                            hoverOpenDelay={500}
                         >
                             <Button
                                 loading={this.props.pagesLoaded}
